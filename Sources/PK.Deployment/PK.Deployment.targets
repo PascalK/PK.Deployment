@@ -1,0 +1,52 @@
+﻿<!--
+***********************************************************************************************
+PK.Deployment.targets  
+
+This file adds and simplifies functionality for deploying applications using MsDeploy (WebDeploy)
+
+Author: Pascal Klarenbeek
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Definitions-->
+  <ItemDefinitionGroup>
+    <MsDeployAdditionalManifestFiles>
+    </MsDeployAdditionalManifestFiles>
+  </ItemDefinitionGroup>
+  
+  <!--Add the MsDeployAdditionalManifestFiles build action to the drop down list in Visual Studio so it can be selected without editing project files-->
+  <ItemGroup>
+    <AvailableItemName Include="MsDeployAdditionalManifestFiles" />
+    <AvailableItemName Include="ParametersXMLFiles" />
+  </ItemGroup>
+  <!--End Definitions-->
+
+  <!--Hooks-->
+  <!--Hook in CopyAdditionalManifestFiles after the package is created-->
+  <PropertyGroup>
+    <OnAfterPackageUsingManifest>
+      $(OnAfterPackageUsingManifest);
+      MsDeployCopyAdditionalManifestFiles;
+    </OnAfterPackageUsingManifest>
+  </PropertyGroup>
+  <!--End hooks-->
+    
+  <!--*********************************************************************-->
+  <!-- MsDeployCopyAdditionalManifestFiles                                 -->
+  <!-- ********************************************************************-->
+  <PropertyGroup>
+    <MsDeployCopyAdditionalManifestFilesDependsOn>
+      $(MsDeployCopyAdditionalManifestFilesDependsOn);
+    </MsDeployCopyAdditionalManifestFilesDependsOn>
+    <OnAfterMsDeployCopyAdditionalManifestFiles>
+      $(OnAfterMsDeployCopyAdditionalManifestFiles);
+    </OnAfterMsDeployCopyAdditionalManifestFiles>
+  </PropertyGroup>
+  <Target Name="MsDeployCopyAdditionalManifestFiles" Condition="'@(MsDeployAdditionalManifestFiles)'!=''" DependsOnTargets="$(MsDeployCopyAdditionalManifestFilesDependsOn)">
+    <Copy SourceFiles="@(MsDeployAdditionalmanifestFiles)" DestinationFolder="$(PackageArchiveRootDir)" />
+    <ItemGroup>
+      <FileWrites Include="@(MsDeployAdditionalManifestFiles)" />
+    </ItemGroup>
+    <CallTarget Targets="$(OnAfterMsDeployCopyAdditionalManifestFiles)" RunEachTargetSeparately="False" />
+  </Target>
+</Project>
