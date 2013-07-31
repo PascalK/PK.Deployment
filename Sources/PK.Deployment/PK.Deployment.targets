@@ -43,10 +43,20 @@ Author: Pascal Klarenbeek
     </OnAfterMsDeployCopyAdditionalManifestFiles>
   </PropertyGroup>
   <Target Name="MsDeployCopyAdditionalManifestFiles" Condition="'@(MsDeployAdditionalManifestFiles)'!=''" DependsOnTargets="$(MsDeployCopyAdditionalManifestFilesDependsOn)">
-    <Copy SourceFiles="@(MsDeployAdditionalmanifestFiles)" DestinationFolder="$(PackageArchiveRootDir)" />
+    <Copy Condition="!$(PackageAsSingleFile)"
+          SourceFiles="@(MsDeployAdditionalmanifestFiles)" 
+          DestinationFolder="$(PackageArchiveRootDir)" />
+    <ItemGroup>
+      <_PackageFileLocation Include="$(PackageFileName)" />
+    </ItemGroup>
+    <Copy Condition="$(PackageAsSingleFile)" 
+          SourceFiles="@(MsDeployAdditionalmanifestFiles)" 
+          DestinationFolder="@(_PackageFileLocation->'%(RootDir)%(Directory)')" />
     <ItemGroup>
       <FileWrites Include="@(MsDeployAdditionalManifestFiles)" />
     </ItemGroup>
+    <!--<_PackageRoot Condition="$(PackageAsSingleFile)">@(_PackageFileLocation->'%(RootDir)%(Directory)')</_PackageRoot>
+    <_PackageRoot Condition="!$(PackageAsSingleFile)">$(PackageArchiveRootDir)</_PackageRoot>-->
     <CallTarget Targets="$(OnAfterMsDeployCopyAdditionalManifestFiles)" RunEachTargetSeparately="False" />
   </Target>
 </Project>

@@ -60,6 +60,7 @@
     <ParametersXMLFiles Include="Properties\Parameters.xml">
       <SubType>Designer</SubType>
     </ParametersXMLFiles>
+    <MsDeployAdditionalManifestFiles Include="AdditionalManifestFile.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
