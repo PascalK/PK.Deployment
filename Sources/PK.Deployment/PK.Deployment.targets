@@ -14,7 +14,7 @@ Author: Pascal Klarenbeek
     </MsDeployAdditionalManifestFiles>
   </ItemDefinitionGroup>
   
-  <!--Add the MsDeployAdditionalManifestFiles build action to the drop down list in Visual Studio so it can be selected without editing project files-->
+  <!--Add the MsDeployAdditionalManifestFiles build action to the drop down list in Visual Studio so it can be selected without editing project files in a text editor-->
   <ItemGroup>
     <AvailableItemName Include="MsDeployAdditionalManifestFiles" />
     <AvailableItemName Include="ParametersXMLFiles" />
@@ -55,8 +55,32 @@ Author: Pascal Klarenbeek
     <ItemGroup>
       <FileWrites Include="@(MsDeployAdditionalManifestFiles)" />
     </ItemGroup>
-    <!--<_PackageRoot Condition="$(PackageAsSingleFile)">@(_PackageFileLocation->'%(RootDir)%(Directory)')</_PackageRoot>
-    <_PackageRoot Condition="!$(PackageAsSingleFile)">$(PackageArchiveRootDir)</_PackageRoot>-->
     <CallTarget Targets="$(OnAfterMsDeployCopyAdditionalManifestFiles)" RunEachTargetSeparately="False" />
+  </Target>
+
+  <!--****************************************************************************************-->
+  <!-- AddReplaceToUpdatePackagePath                                                          -->
+  <!-- Original solution by: Sayed Ibrahim Hashimi - Web packaging fixing the long path issue -->
+  <!-- http://sedodream.com/2013/01/13/WebPackagingFixingTheLongPathIssue.aspx                -->
+  <!--****************************************************************************************-->
+  <PropertyGroup>
+    <PackagePath Condition=" '$(PackagePath)'=='' ">website</PackagePath>
+    <EnableAddReplaceToUpdatePackagePath Condition=" '$(EnableAddReplaceToUpdatePackagePath)'=='' ">true</EnableAddReplaceToUpdatePackagePath>
+  </PropertyGroup>
+  <Target Name="AddReplaceRuleForAppPath" Condition=" '$(EnableAddReplaceToUpdatePackagePath)'=='true' " BeforeTargets="Package">
+    <PropertyGroup>
+      <_PkgPathFull>$([System.IO.Path]::GetFullPath($(WPPAllFilesInSingleFolder)))</_PkgPathFull>
+    </PropertyGroup>
+    <!-- Escape the text into a regex -->
+    <EscapeTextForRegularExpressions Text="$(_PkgPathFull)">
+      <Output TaskParameter="Result" PropertyName="_PkgPathRegex" />
+    </EscapeTextForRegularExpressions>
+    <!-- Add the replace rule to update the path -->
+    <ItemGroup>
+      <MsDeployReplaceRules Include="replaceFullPath">
+        <Match>$(_PkgPathRegex)</Match>
+        <Replace>$(PackagePath)</Replace>
+      </MsDeployReplaceRules>
+    </ItemGroup>
   </Target>
 </Project>
